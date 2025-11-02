@@ -3,3 +3,6 @@
 *.tfstate.backup
 *.zip
 *.tar.gz
+.terraform/
+*.tfstate
+*.tfstate.backup
