@@ -1,4 +1,6 @@
 ```
+prerequistes: VS Code, Terraform, Azure CLI
+
 git clone https://github.com/atulkamble/WebAppDB.git
 cd WebAppDB
 
