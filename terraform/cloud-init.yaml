@@ -16,6 +16,10 @@ packages:
   - php-mbstring
   - php-xml
   - php-xmlrpc
+  - tree
+  - python3-pip
+  - python-is-python3
+  - git
 
 write_files:
   - path: /var/www/html/index.php
