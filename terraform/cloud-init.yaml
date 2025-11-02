@@ -1,0 +1,819 @@
+#cloud-config
+# Cloud-init configuration for automatic Apache2 and MySQL setup
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - apache2
+  - mysql-server
+  - php
+  - php-mysql
+  - libapache2-mod-php
+  - php-cli
+  - php-curl
+  - php-gd
+  - php-mbstring
+  - php-xml
+  - php-xmlrpc
+
+write_files:
+  - path: /var/www/html/index.php
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Azure VM - Apache2 & MySQL</title>
+          <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  padding: 20px;
+              }
+              .container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 20px;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  max-width: 800px;
+                  width: 100%;
+              }
+              h1 {
+                  color: #333;
+                  margin-bottom: 30px;
+                  text-align: center;
+                  font-size: 2.5em;
+              }
+              .status {
+                  background: #f8f9fa;
+                  padding: 20px;
+                  border-radius: 10px;
+                  margin: 20px 0;
+              }
+              .status-item {
+                  display: flex;
+                  justify-content: space-between;
+                  padding: 10px;
+                  border-bottom: 1px solid #dee2e6;
+              }
+              .status-item:last-child { border-bottom: none; }
+              .label { font-weight: bold; color: #495057; }
+              .value { color: #28a745; }
+              .links {
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                  gap: 15px;
+                  margin-top: 30px;
+              }
+              .link-card {
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  color: white;
+                  padding: 20px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  text-align: center;
+                  transition: transform 0.3s;
+              }
+              .link-card:hover { transform: translateY(-5px); }
+              .footer {
+                  text-align: center;
+                  margin-top: 30px;
+                  color: #6c757d;
+                  font-size: 0.9em;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>🚀 Welcome to Azure VM</h1>
+              <div class="status">
+                  <div class="status-item">
+                      <span class="label">Server:</span>
+                      <span class="value">✓ Apache2 Running</span>
+                  </div>
+                  <div class="status-item">
+                      <span class="label">Language:</span>
+                      <span class="value">✓ PHP <?php echo PHP_VERSION; ?></span>
+                  </div>
+                  <div class="status-item">
+                      <span class="label">Hostname:</span>
+                      <span class="value"><?php echo gethostname(); ?></span>
+                  </div>
+                  <div class="status-item">
+                      <span class="label">Server IP:</span>
+                      <span class="value"><?php echo $_SERVER['SERVER_ADDR']; ?></span>
+                  </div>
+                  <div class="status-item">
+                      <span class="label">Current Time:</span>
+                      <span class="value"><?php echo date('Y-m-d H:i:s'); ?></span>
+                  </div>
+              </div>
+              
+              <div class="links">
+                  <a href="info.php" class="link-card">
+                      <h3>📋 PHP Info</h3>
+                      <p>View PHP configuration</p>
+                  </a>
+                  <a href="db_test.php" class="link-card">
+                      <h3>🗄️ Database Test</h3>
+                      <p>Test MySQL connection</p>
+                  </a>
+                  <a href="manage_users.php" class="link-card">
+                      <h3>👥 Manage Users</h3>
+                      <p>View, edit & delete users</p>
+                  </a>
+                  <a href="add_user.php" class="link-card">
+                      <h3>➕ Add User</h3>
+                      <p>Add new user to database</p>
+                  </a>
+              </div>
+              
+              <div class="footer">
+                  <p>Powered by Azure VM | Apache2 | MySQL | PHP</p>
+              </div>
+          </div>
+      </body>
+      </html>
+    permissions: '0644'
+
+  - path: /var/www/html/info.php
+    content: |
+      <?php
+      phpinfo();
+      ?>
+    permissions: '0644'
+    
+  - path: /var/www/html/db_test.php
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>MySQL Database Test</title>
+          <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  padding: 20px;
+              }
+              .container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 20px;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  max-width: 1000px;
+                  margin: 20px auto;
+              }
+              h1 { color: #333; margin-bottom: 20px; text-align: center; }
+              h2 { color: #667eea; margin: 20px 0; }
+              .success { color: #28a745; padding: 15px; background: #d4edda; border-radius: 5px; margin: 20px 0; }
+              .error { color: #dc3545; padding: 15px; background: #f8d7da; border-radius: 5px; margin: 20px 0; }
+              table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin: 20px 0;
+                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+              }
+              th, td {
+                  padding: 15px;
+                  text-align: left;
+                  border-bottom: 1px solid #ddd;
+              }
+              th {
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  color: white;
+                  font-weight: bold;
+              }
+              tr:hover { background-color: #f5f5f5; }
+              .back-link {
+                  display: inline-block;
+                  margin-top: 20px;
+                  padding: 10px 20px;
+                  background: #667eea;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 5px;
+                  transition: background 0.3s;
+              }
+              .back-link:hover { background: #764ba2; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>🗄️ MySQL Database Connection Test</h1>
+              
+              <?php
+              $servername = "localhost";
+              $username = "webuser";
+              $password = "webpass123";
+              $database = "webdb";
+              
+              // Create connection
+              $conn = new mysqli($servername, $username, $password, $database);
+              
+              // Check connection
+              if ($conn->connect_error) {
+                  echo '<div class="error">';
+                  echo '<h2>❌ Connection Failed!</h2>';
+                  echo '<p>Error: ' . $conn->connect_error . '</p>';
+                  echo '</div>';
+              } else {
+                  echo '<div class="success">';
+                  echo '<h2>✅ MySQL Connection Successful!</h2>';
+                  echo '<p><strong>Connected to database:</strong> ' . $database . '</p>';
+                  echo '<p><strong>Server version:</strong> ' . $conn->server_info . '</p>';
+                  echo '</div>';
+                  
+                  // Display data from test table
+                  $sql = "SELECT * FROM users";
+                  $result = $conn->query($sql);
+                  
+                  if ($result->num_rows > 0) {
+                      echo '<h2>Users in Database:</h2>';
+                      echo '<table>';
+                      echo '<tr><th>ID</th><th>Name</th><th>Email</th><th>Created At</th></tr>';
+                      while($row = $result->fetch_assoc()) {
+                          echo '<tr>';
+                          echo '<td>' . htmlspecialchars($row["id"]) . '</td>';
+                          echo '<td>' . htmlspecialchars($row["name"]) . '</td>';
+                          echo '<td>' . htmlspecialchars($row["email"]) . '</td>';
+                          echo '<td>' . htmlspecialchars($row["created_at"]) . '</td>';
+                          echo '</tr>';
+                      }
+                      echo '</table>';
+                  } else {
+                      echo '<p>No users found in the database.</p>';
+                  }
+                  
+                  $conn->close();
+              }
+              ?>
+              
+              <a href="index.php" class="back-link">← Back to Home</a>
+          </div>
+      </body>
+      </html>
+    permissions: '0644'
+
+  - path: /var/www/html/add_user.php
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Add New User</title>
+          <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  padding: 20px;
+              }
+              .container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 20px;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  max-width: 600px;
+                  margin: 20px auto;
+              }
+              h1 { color: #333; margin-bottom: 20px; text-align: center; }
+              .success { color: #28a745; padding: 15px; background: #d4edda; border-radius: 5px; margin: 20px 0; }
+              .error { color: #dc3545; padding: 15px; background: #f8d7da; border-radius: 5px; margin: 20px 0; }
+              .form-group { margin-bottom: 20px; }
+              label { display: block; margin-bottom: 8px; color: #333; font-weight: bold; }
+              input[type="text"], input[type="email"] {
+                  width: 100%;
+                  padding: 12px;
+                  border: 2px solid #ddd;
+                  border-radius: 5px;
+                  font-size: 16px;
+                  transition: border-color 0.3s;
+              }
+              input[type="text"]:focus, input[type="email"]:focus {
+                  outline: none;
+                  border-color: #667eea;
+              }
+              .btn {
+                  display: inline-block;
+                  padding: 12px 30px;
+                  background: #667eea;
+                  color: white;
+                  text-decoration: none;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;
+                  font-size: 16px;
+                  transition: background 0.3s;
+                  margin-right: 10px;
+              }
+              .btn:hover { background: #764ba2; }
+              .btn-secondary { background: #6c757d; }
+              .btn-secondary:hover { background: #5a6268; }
+              .button-group { margin-top: 20px; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>➕ Add New User</h1>
+              
+              <?php
+              $servername = "localhost";
+              $username = "webuser";
+              $password = "webpass123";
+              $database = "webdb";
+              
+              $conn = new mysqli($servername, $username, $password, $database);
+              
+              if ($conn->connect_error) {
+                  echo '<div class="error"><h2>❌ Connection Failed!</h2><p>Error: ' . $conn->connect_error . '</p></div>';
+              } else {
+                  if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                      $name = $conn->real_escape_string($_POST['name']);
+                      $email = $conn->real_escape_string($_POST['email']);
+                      
+                      if (!empty($name) && !empty($email)) {
+                          $sql = "INSERT INTO users (name, email) VALUES ('$name', '$email')";
+                          
+                          if ($conn->query($sql) === TRUE) {
+                              echo '<div class="success"><h2>✅ User Added Successfully!</h2>';
+                              echo '<p><strong>Name:</strong> ' . htmlspecialchars($name) . '</p>';
+                              echo '<p><strong>Email:</strong> ' . htmlspecialchars($email) . '</p></div>';
+                          } else {
+                              echo '<div class="error"><h2>❌ Error Adding User!</h2><p>Error: ' . $conn->error . '</p></div>';
+                          }
+                      } else {
+                          echo '<div class="error"><p>⚠️ Please fill in all fields!</p></div>';
+                      }
+                  }
+                  $conn->close();
+              }
+              ?>
+              
+              <form method="POST" action="">
+                  <div class="form-group">
+                      <label for="name">Full Name:</label>
+                      <input type="text" id="name" name="name" required placeholder="Enter full name">
+                  </div>
+                  <div class="form-group">
+                      <label for="email">Email Address:</label>
+                      <input type="email" id="email" name="email" required placeholder="Enter email address">
+                  </div>
+                  <div class="button-group">
+                      <button type="submit" class="btn">Add User</button>
+                      <a href="manage_users.php" class="btn btn-secondary">View All Users</a>
+                      <a href="index.php" class="btn btn-secondary">← Back to Home</a>
+                  </div>
+              </form>
+          </div>
+      </body>
+      </html>
+    permissions: '0644'
+
+  - path: /var/www/html/manage_users.php
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Manage Users</title>
+          <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  padding: 20px;
+              }
+              .container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 20px;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  max-width: 1200px;
+                  margin: 20px auto;
+              }
+              h1 { color: #333; margin-bottom: 20px; text-align: center; }
+              h2 { color: #667eea; margin: 20px 0; }
+              .success { color: #28a745; padding: 15px; background: #d4edda; border-radius: 5px; margin: 20px 0; }
+              .error { color: #dc3545; padding: 15px; background: #f8d7da; border-radius: 5px; margin: 20px 0; }
+              table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin: 20px 0;
+                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+              }
+              th, td {
+                  padding: 15px;
+                  text-align: left;
+                  border-bottom: 1px solid #ddd;
+              }
+              th {
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  color: white;
+                  font-weight: bold;
+              }
+              tr:hover { background-color: #f5f5f5; }
+              .btn {
+                  display: inline-block;
+                  padding: 8px 16px;
+                  background: #667eea;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 5px;
+                  font-size: 14px;
+                  transition: background 0.3s;
+                  margin-right: 5px;
+                  border: none;
+                  cursor: pointer;
+              }
+              .btn:hover { background: #764ba2; }
+              .btn-danger { background: #dc3545; }
+              .btn-danger:hover { background: #c82333; }
+              .btn-success { background: #28a745; }
+              .btn-success:hover { background: #218838; }
+              .action-buttons { margin-bottom: 20px; }
+              .stats {
+                  background: #f8f9fa;
+                  padding: 20px;
+                  border-radius: 10px;
+                  margin: 20px 0;
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                  gap: 15px;
+              }
+              .stat-item {
+                  text-align: center;
+                  padding: 15px;
+                  background: white;
+                  border-radius: 8px;
+              }
+              .stat-number {
+                  font-size: 2em;
+                  color: #667eea;
+                  font-weight: bold;
+              }
+              .stat-label {
+                  color: #6c757d;
+                  margin-top: 5px;
+              }
+          </style>
+          <script>
+              function confirmDelete(id, name) {
+                  if (confirm('Are you sure you want to delete user "' + name + '"?')) {
+                      window.location.href = 'delete_user.php?id=' + id;
+                  }
+              }
+          </script>
+      </head>
+      <body>
+          <div class="container">
+              <h1>👥 Manage Users</h1>
+              
+              <?php
+              $servername = "localhost";
+              $username = "webuser";
+              $password = "webpass123";
+              $database = "webdb";
+              
+              $conn = new mysqli($servername, $username, $password, $database);
+              
+              if ($conn->connect_error) {
+                  echo '<div class="error"><h2>❌ Connection Failed!</h2><p>Error: ' . $conn->connect_error . '</p></div>';
+              } else {
+                  $count_sql = "SELECT COUNT(*) as total FROM users";
+                  $count_result = $conn->query($count_sql);
+                  $total_users = 0;
+                  if ($count_result && $row = $count_result->fetch_assoc()) {
+                      $total_users = $row['total'];
+                  }
+                  
+                  echo '<div class="stats">';
+                  echo '<div class="stat-item"><div class="stat-number">' . $total_users . '</div><div class="stat-label">Total Users</div></div>';
+                  echo '<div class="stat-item"><div class="stat-number">' . date('Y-m-d') . '</div><div class="stat-label">Current Date</div></div>';
+                  echo '<div class="stat-item"><div class="stat-number">✓</div><div class="stat-label">Database Online</div></div>';
+                  echo '</div>';
+                  
+                  echo '<div class="action-buttons">';
+                  echo '<a href="add_user.php" class="btn btn-success">➕ Add New User</a>';
+                  echo '<a href="index.php" class="btn">← Back to Home</a>';
+                  echo '<a href="db_test.php" class="btn">🔍 Database Test</a>';
+                  echo '</div>';
+                  
+                  $sql = "SELECT * FROM users ORDER BY id DESC";
+                  $result = $conn->query($sql);
+                  
+                  if ($result && $result->num_rows > 0) {
+                      echo '<h2>All Users:</h2><table>';
+                      echo '<tr><th>ID</th><th>Name</th><th>Email</th><th>Created At</th><th>Actions</th></tr>';
+                      while($row = $result->fetch_assoc()) {
+                          echo '<tr>';
+                          echo '<td>' . htmlspecialchars($row["id"]) . '</td>';
+                          echo '<td>' . htmlspecialchars($row["name"]) . '</td>';
+                          echo '<td>' . htmlspecialchars($row["email"]) . '</td>';
+                          echo '<td>' . htmlspecialchars($row["created_at"]) . '</td>';
+                          echo '<td>';
+                          echo '<a href="edit_user.php?id=' . $row["id"] . '" class="btn">✏️ Edit</a>';
+                          echo '<button onclick="confirmDelete(' . $row["id"] . ', \'' . htmlspecialchars($row["name"], ENT_QUOTES) . '\')" class="btn btn-danger">🗑️ Delete</button>';
+                          echo '</td></tr>';
+                      }
+                      echo '</table>';
+                  } else {
+                      echo '<div class="error"><p>⚠️ No users found in the database.</p></div>';
+                  }
+                  
+                  $conn->close();
+              }
+              ?>
+          </div>
+      </body>
+      </html>
+    permissions: '0644'
+
+  - path: /var/www/html/edit_user.php
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Edit User</title>
+          <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  padding: 20px;
+              }
+              .container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 20px;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  max-width: 600px;
+                  margin: 20px auto;
+              }
+              h1 { color: #333; margin-bottom: 20px; text-align: center; }
+              .success { color: #28a745; padding: 15px; background: #d4edda; border-radius: 5px; margin: 20px 0; }
+              .error { color: #dc3545; padding: 15px; background: #f8d7da; border-radius: 5px; margin: 20px 0; }
+              .form-group { margin-bottom: 20px; }
+              label { display: block; margin-bottom: 8px; color: #333; font-weight: bold; }
+              input[type="text"], input[type="email"] {
+                  width: 100%;
+                  padding: 12px;
+                  border: 2px solid #ddd;
+                  border-radius: 5px;
+                  font-size: 16px;
+                  transition: border-color 0.3s;
+              }
+              input[type="text"]:focus, input[type="email"]:focus {
+                  outline: none;
+                  border-color: #667eea;
+              }
+              .btn {
+                  display: inline-block;
+                  padding: 12px 30px;
+                  background: #667eea;
+                  color: white;
+                  text-decoration: none;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;
+                  font-size: 16px;
+                  transition: background 0.3s;
+                  margin-right: 10px;
+              }
+              .btn:hover { background: #764ba2; }
+              .btn-secondary { background: #6c757d; }
+              .btn-secondary:hover { background: #5a6268; }
+              .button-group { margin-top: 20px; }
+              .user-id {
+                  background: #f8f9fa;
+                  padding: 10px;
+                  border-radius: 5px;
+                  color: #6c757d;
+                  margin-bottom: 20px;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>✏️ Edit User</h1>
+              
+              <?php
+              $servername = "localhost";
+              $username = "webuser";
+              $password = "webpass123";
+              $database = "webdb";
+              
+              $conn = new mysqli($servername, $username, $password, $database);
+              
+              if ($conn->connect_error) {
+                  echo '<div class="error"><h2>❌ Connection Failed!</h2><p>Error: ' . $conn->connect_error . '</p></div>';
+              } else {
+                  if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+                      $id = intval($_GET['id']);
+                      
+                      if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                          $name = $conn->real_escape_string($_POST['name']);
+                          $email = $conn->real_escape_string($_POST['email']);
+                          
+                          if (!empty($name) && !empty($email)) {
+                              $sql = "UPDATE users SET name = '$name', email = '$email' WHERE id = $id";
+                              
+                              if ($conn->query($sql) === TRUE) {
+                                  echo '<div class="success"><h2>✅ User Updated Successfully!</h2>';
+                                  echo '<p><strong>Name:</strong> ' . htmlspecialchars($name) . '</p>';
+                                  echo '<p><strong>Email:</strong> ' . htmlspecialchars($email) . '</p></div>';
+                              } else {
+                                  echo '<div class="error"><h2>❌ Error Updating User!</h2><p>Error: ' . $conn->error . '</p></div>';
+                              }
+                          } else {
+                              echo '<div class="error"><p>⚠️ Please fill in all fields!</p></div>';
+                          }
+                      }
+                      
+                      $sql = "SELECT * FROM users WHERE id = $id";
+                      $result = $conn->query($sql);
+                      
+                      if ($result && $result->num_rows > 0) {
+                          $user = $result->fetch_assoc();
+                          echo '<div class="user-id"><strong>User ID:</strong> ' . htmlspecialchars($user['id']) . ' | <strong>Created:</strong> ' . htmlspecialchars($user['created_at']) . '</div>';
+                          echo '<form method="POST" action="">';
+                          echo '<div class="form-group"><label for="name">Full Name:</label>';
+                          echo '<input type="text" id="name" name="name" required value="' . htmlspecialchars($user['name']) . '"></div>';
+                          echo '<div class="form-group"><label for="email">Email Address:</label>';
+                          echo '<input type="email" id="email" name="email" required value="' . htmlspecialchars($user['email']) . '"></div>';
+                          echo '<div class="button-group">';
+                          echo '<button type="submit" class="btn">💾 Update User</button>';
+                          echo '<a href="manage_users.php" class="btn btn-secondary">← Back to Management</a>';
+                          echo '</div></form>';
+                      } else {
+                          echo '<div class="error"><h2>⚠️ User Not Found!</h2><p>No user exists with ID: ' . $id . '</p></div>';
+                          echo '<a href="manage_users.php" class="btn">← Back to Management</a>';
+                      }
+                  } else {
+                      echo '<div class="error"><h2>⚠️ Invalid Request!</h2><p>No user ID provided or invalid ID format.</p></div>';
+                      echo '<a href="manage_users.php" class="btn">← Back to Management</a>';
+                  }
+                  
+                  $conn->close();
+              }
+              ?>
+          </div>
+      </body>
+      </html>
+    permissions: '0644'
+
+  - path: /var/www/html/delete_user.php
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Delete User</title>
+          <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  padding: 20px;
+              }
+              .container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 20px;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  max-width: 600px;
+                  margin: 20px auto;
+              }
+              h1 { color: #333; margin-bottom: 20px; text-align: center; }
+              .success { color: #28a745; padding: 15px; background: #d4edda; border-radius: 5px; margin: 20px 0; }
+              .error { color: #dc3545; padding: 15px; background: #f8d7da; border-radius: 5px; margin: 20px 0; }
+              .btn {
+                  display: inline-block;
+                  padding: 12px 30px;
+                  background: #667eea;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 5px;
+                  transition: background 0.3s;
+                  margin-top: 20px;
+              }
+              .btn:hover { background: #764ba2; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>🗑️ Delete User</h1>
+              
+              <?php
+              $servername = "localhost";
+              $username = "webuser";
+              $password = "webpass123";
+              $database = "webdb";
+              
+              $conn = new mysqli($servername, $username, $password, $database);
+              
+              if ($conn->connect_error) {
+                  echo '<div class="error"><h2>❌ Connection Failed!</h2><p>Error: ' . $conn->connect_error . '</p></div>';
+              } else {
+                  if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+                      $id = intval($_GET['id']);
+                      
+                      $check_sql = "SELECT name, email FROM users WHERE id = $id";
+                      $check_result = $conn->query($check_sql);
+                      
+                      if ($check_result && $check_result->num_rows > 0) {
+                          $user = $check_result->fetch_assoc();
+                          
+                          $sql = "DELETE FROM users WHERE id = $id";
+                          
+                          if ($conn->query($sql) === TRUE) {
+                              echo '<div class="success"><h2>✅ User Deleted Successfully!</h2>';
+                              echo '<p><strong>Deleted User:</strong> ' . htmlspecialchars($user['name']) . '</p>';
+                              echo '<p><strong>Email:</strong> ' . htmlspecialchars($user['email']) . '</p>';
+                              echo '<p><strong>User ID:</strong> ' . $id . '</p></div>';
+                          } else {
+                              echo '<div class="error"><h2>❌ Error Deleting User!</h2><p>Error: ' . $conn->error . '</p></div>';
+                          }
+                      } else {
+                          echo '<div class="error"><h2>⚠️ User Not Found!</h2><p>No user exists with ID: ' . $id . '</p></div>';
+                      }
+                  } else {
+                      echo '<div class="error"><h2>⚠️ Invalid Request!</h2><p>No user ID provided or invalid ID format.</p></div>';
+                  }
+                  
+                  $conn->close();
+              }
+              ?>
+              
+              <a href="manage_users.php" class="btn">← Back to User Management</a>
+          </div>
+      </body>
+      </html>
+    permissions: '0644'
+
+  - path: /tmp/setup_mysql.sh
+    content: |
+      #!/bin/bash
+      # MySQL setup script
+      
+      # Set MySQL root password
+      sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${mysql_root_password}';"
+      sudo mysql -e "FLUSH PRIVILEGES;"
+      
+      # Create database and user
+      sudo mysql -u root -p'${mysql_root_password}' <<EOF
+      CREATE DATABASE IF NOT EXISTS webdb;
+      CREATE USER IF NOT EXISTS 'webuser'@'localhost' IDENTIFIED BY 'webpass123';
+      GRANT ALL PRIVILEGES ON webdb.* TO 'webuser'@'localhost';
+      FLUSH PRIVILEGES;
+      
+      USE webdb;
+      CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(100) NOT NULL,
+          email VARCHAR(100) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      INSERT INTO users (name, email) VALUES 
+          ('John Doe', 'john@example.com'),
+          ('Jane Smith', 'jane@example.com'),
+          ('Bob Johnson', 'bob@example.com');
+      EOF
+      
+      echo "MySQL setup completed successfully!"
+    permissions: '0755'
+
+runcmd:
+  - systemctl enable apache2
+  - systemctl start apache2
+  - systemctl enable mysql
+  - systemctl start mysql
+  - sleep 10
+  - /tmp/setup_mysql.sh
+  - rm -f /var/www/html/index.html
+  - chown -R www-data:www-data /var/www/html
+  - chmod -R 755 /var/www/html
+  - a2enmod rewrite
+  - systemctl restart apache2
+
+final_message: "The system is ready! Apache2 and MySQL are installed and configured."
